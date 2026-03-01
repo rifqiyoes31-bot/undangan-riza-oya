@@ -10,7 +10,7 @@ import { lang } from '../../common/language.js';
 import { storage } from '../../common/storage.js';
 import { session } from '../../common/session.js';
 import { offline } from '../../common/offline.js';
-import { comment } from '../components/comment.js';
+import { firebaseComment as comment } from '../components/firebase-comment.js';
 import * as confetti from '../../libs/confetti.js';
 import { pool } from '../../connection/request.js';
 
@@ -347,9 +347,8 @@ export const guest = (() => {
         }
 
         if (token && token.length > 0) {
-            // add 2 progress for config and comment.
+            // add 1 progress for config (firebase comment is now handle separately)
             // before img.load();
-            progress.add();
             progress.add();
 
             // if don't have data-src.

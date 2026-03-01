@@ -30,11 +30,14 @@ export const firebaseComment = {
         const q = query(commentsRef, orderByKey(), limitToLast(100));
 
         onValue(q, (snapshot) => {
-            commentsContainer.innerHTML = "";
+            const currentContainer = document.getElementById('comments');
+            if (!currentContainer) return;
+
+            currentContainer.innerHTML = "";
             const data = snapshot.val();
 
             if (!data) {
-                commentsContainer.innerHTML = '<div class="text-center p-4 bg-theme-auto rounded-4 shadow"><p class="p-0 m-0">Belum ada ucapan. Jadilah yang pertama! 🎉</p></div>';
+                currentContainer.innerHTML = '<div class="text-center p-4 bg-theme-auto rounded-4 shadow"><p class="p-0 m-0">Belum ada ucapan. Jadilah yang pertama! 🎉</p></div>';
                 return;
             }
 
@@ -59,49 +62,59 @@ export const firebaseComment = {
                         <p class="m-0 text-break">${val.comment}</p>
                     </div>
                 `;
-                commentsContainer.appendChild(card);
+                currentContainer.appendChild(card);
             });
         });
+    },
 
-        // Pasang event klik pada tombol Send
-        const sendBtn = document.querySelector('button[onclick="undangan.comment.send(this)"]');
-        if (sendBtn) {
-            sendBtn.removeAttribute('onclick');
-            sendBtn.addEventListener('click', async (e) => {
-                const nameInput = document.getElementById('form-name');
-                const presenceInput = document.getElementById('form-presence');
-                const commentInput = document.getElementById('form-comment');
+    send: async (btn) => {
+        const nameInput = document.getElementById('form-name');
+        const presenceInput = document.getElementById('form-presence');
+        const commentInput = document.getElementById('form-comment');
 
-                const name = nameInput.value.trim();
-                const presence = presenceInput.value;
-                const comment = commentInput.value.trim();
+        const name = nameInput.value.trim();
+        const presence = presenceInput.value;
+        const comment = commentInput.value.trim();
 
-                if (!name || presence === "0" || !comment) {
-                    alert("Harap isi nama, kehadiran, dan ucapan Anda.");
-                    return;
-                }
-
-                sendBtn.disabled = true;
-                sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Mengirim...';
-
-                try {
-                    const newCommentRef = push(commentsRef);
-                    await set(newCommentRef, {
-                        name: name,
-                        presence: presence,
-                        comment: comment,
-                        timestamp: serverTimestamp()
-                    });
-
-                    commentInput.value = "";
-                } catch (error) {
-                    console.error("Error adding comment: ", error);
-                    alert("Gagal mengirim ucapan. Pastikan Realtime Database sudah dalam 'Test Mode'.");
-                } finally {
-                    sendBtn.disabled = false;
-                    sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Send';
-                }
-            });
+        if (!name || presence === "0" || !comment) {
+            alert("Harap isi nama, kehadiran, dan ucapan Anda.");
+            return;
         }
+
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Mengirim...';
+
+        try {
+            const newCommentRef = push(commentsRef);
+            await set(newCommentRef, {
+                name: name,
+                presence: presence,
+                comment: comment,
+                timestamp: serverTimestamp()
+            });
+
+            commentInput.value = "";
+        } catch (error) {
+            console.error("Error adding comment: ", error);
+            alert("Gagal mengirim ucapan. Pastikan Realtime Database sudah dalam 'Test Mode'.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    },
+
+    show: () => {
+        // Dummy show method to satisfy references in guest.js
+        return Promise.resolve();
+    },
+
+    gif: {
+        open: () => { },
+        default: {}
+    },
+
+    like: {
+        init: () => { }
     }
 };
